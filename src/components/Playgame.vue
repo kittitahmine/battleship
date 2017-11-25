@@ -1,255 +1,112 @@
 <template>
   <div class="hello">
-    <p>Drag the W3Schools image into the rectangle:</p>
-  <table>
-  	<tr v-for="i in 10">
-      	<td v-for="j in 10" :style="" @click="show(j-1,i-1)">
-          <img v-if="showship(j-1,i-1)" src="../assets/ship.png" class="img">
-        </td>
-    </tr>
-
-  </table>
-  <div class="field is-grouped">
-    <div class="control">
-      <button class="button is-link" @click="setship()">Next</button>
+    <h1 class="title has-text-light">Battleship</h1>
+    <h2 class="subtitle has-text-primary">Let fun with me</h2>
+    <h2 class="subtitle has-text-light">score = {{score.A}} - {{score.B}}</h2>
+    <div class="columns is-mobile is-centered">
+      <div class="column is-6">
+        <h1 class="title has-text-light" v-if="score==16">You win</h1>
+        <h2 class="subtitle has-text-light">me</h2>
+        <table>
+          <tr v-for="(y, indexY) in Ownsea" :key="y['.key']">
+            <td v-for="(x, indexX) in y" :key="x['.key']" :class="setClass(x)">
+              <img v-if="x.shipstatus" src="../assets/ship.png" class="img">
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="column is-6">
+        <h2 class="subtitle has-text-light">enemy</h2>
+        <table>
+          <tr v-for="(y, indexY) in Enemysea" :key="y['.key']">
+            <td v-for="(x, indexX) in y" :key="x['.key']" @click="setbomb(indexX,indexY,x)" :class="setClass(x)">
+              <img v-if="x.shipstatus" src="../assets/ship.png" class="img">
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-    <div class="control">
-      <button class="button is-text" @click="convert">Cancel</button>
+    <br><br>
+    <div class="columns is-mobile is-centered menu" v-if="score==16">
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-primary is-large" @click="">Finish</button>
+        </div>
+      </div>
     </div>
-  </div>
-
-  <div class="columns">
-    <div class="column" v-if="hidemenu[0]">
-      <div class="ship h2" @click="select(2,1)"></div>
-      <div class="ship v2" @click="select(1,2)"></div>
-    </div>
-    <div class="column" v-if="hidemenu[1]">
-      <div class="ship h3" @click="select(3,1)"></div>
-      <div class="ship v3" @click="select(1,3)"></div>
-    </div>
-    <div class="column" v-if="hidemenu[2]">
-      <div class="ship h4" @click="select(4,1)"></div>
-      <div class="ship v4" @click="select(1,4)"></div>
-    </div>
-    </a>
-  </div>
-
-
   <br>
 
   </div>
 </template>
 
 <script>
-/* import firebase from 'firebase'
-var config = {
-  apiKey: 'AIzaSyBc4GvjjmZMezOuv2fc8FOUiPcyttLPmuw',
-  authDomain: 'battleship-d7f88.firebaseapp.com',
-  databaseURL: 'https://battleship-d7f88.firebaseio.com',
-  projectId: 'battleship-d7f88',
-  storageBucket: '',
-  messagingSenderId: '211714676183'
-}
-var firebaseApp = firebase.initializeApp(config)
-var db = firebaseApp.database()
-var shipsetRef = db.ref('boards') */
-// var enemyref = db.ref('boards')
+import { mapGetters, mapActions } from 'vuex'
 export default {
-  name: 'Playgame',
+  name: 'Placeship',
   data () {
     return {
       x: 0,
       y: 0,
       boardOnplay: '0011',
-      hidemenu: [true, true, true],
-      position: [
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ],
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ],
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ],
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ],
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ],
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ],
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ],
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ],
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ],
-        [
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false},
-          {shipstatus: false}
-        ]
-      ]
+      ShipEnemy: '',
+      hidemenu: [true, true, true]
     }
   },
   methods: {
-    show (j, i) {
-      for (let x = 0; x < this.x; x++) {
-        if (j + x >= 10 || this.position[j + x][i].shipstatus) {
-          return 0
-        }
+    ...mapActions([
+      'setbombFirebase',
+      'addScore',
+      'getEnemy',
+      'getOwn',
+      'getScore'
+    ]),
+    setbomb (x, y, obj) {
+      if (obj.shipstatus && !obj.bombstatus) {
+        this.addScore()
       }
-      for (let y = 0; y < this.y; y++) {
-        if (i + y >= 10 || this.position[j][i + y].shipstatus) {
-          return 0
-        }
+      var xy = {
+        x: x,
+        y: y
       }
-      for (let x = 0; x < this.x; x++) {
-        this.position[j + x][i].shipstatus = true
-      }
-      for (let y = 0; y < this.y; y++) {
-        this.position[j][i + y].shipstatus = true
-      }
-      this.hide(this.x + this.y - 3)
+      this.setbombFirebase(xy)
     },
-    convert () {
-      var jsonString = JSON.stringify(this.position)
-      console.log(jsonString)
-    },
-    setship () {
-      for (let y = 0; y < 10; y++) {
-        for (let x = 0; x < 10; x++) {
-          if (this.position[x][y].shipstatus) {
-            // shipsetRef.child(this.boardOnplay + '/position/' + y + '/' + x + '/shipstatus').set(true)
-            this.showconsole(x, y)
-          }
-        }
-      }
-    },
-    showconsole (y, x) {
-      console.log(y + ',' + x)
-    },
-    showship (x, y) {
-      return this.position[x][y].shipstatus
+    showconsole (x, y) {
+      console.log(x + ',' + y)
     },
     select (x, y) {
       this.x = x
       this.y = y
     },
-    hide (i) {
-      this.hidemenu[i] = false
+    setClass (obj) {
+      if (obj.shipstatus && obj.bombstatus) {
+        return 'boom'
+      } else if (obj.bombstatus) {
+        return 'empty'
+      } else {
+        return ''
+      }
     }
   },
-  firebase: {
+  computed: {
+    ...mapGetters([
+      'Ownsea',
+      'Enemysea',
+      'score'
+    ]),
+    undatesea () {
+      this.getOwn()
+      this.getEnemy()
+    },
+    undatescore () {
+      this.getScore()
+    }
 
   },
   created () {
-    /* for (var i = 0; i < 10; i++) {
-      this.position.push([])
-      this.position[i].push(new Array(10))
-      for (var j = 0; j < 10; j++) {
-        this.position[i][j] = {
-          shipstatus: false
-        }
-        console.log(this.position[i][j].shipstatus)
-      }
-    } */
+    this.getOwn()
+    this.getEnemy()
+    this.getScore()
   }
-
 }
 </script>
 
@@ -265,11 +122,17 @@ export default {
     height:auto;
   }
   .img {
-    width:50px;
-    height:50px;
+    width:40px;
+    height:40px;
   }
   .ship{
     background-color: rgb(194, 70, 174);
     margin: 10px;
+  }
+  .boom {
+    background-color: rgba(203, 74, 10, 0.74);
+  }
+  .empty {
+    background-color: rgba(70, 142, 194,0.3);
   }
 </style>
