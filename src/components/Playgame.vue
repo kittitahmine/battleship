@@ -1,11 +1,30 @@
 <template>
   <div class="hello">
+    <div v-if="user">
+      <img :src="user.fb && user.fb.photoURL" class="photo-url" alt="">
+      <br>
+      <h2 class="subtitle">{{user.displayName}}</h2>
+    </div>
     <h1 class="title has-text-light">Battleship</h1>
     <h2 class="subtitle has-text-primary">Let fun with me</h2>
-    <h2 class="subtitle has-text-light">score = {{score.A}} - {{score.B}}</h2>
+    <div class="columns is-mobile">
+      <div class="column is-three-fifths is-offset-one-fifth">
+        <div class="tags has-addons">
+          <span :class="setClassturn(statusplayer)">
+            <h2 class="subtitle has-text-light has-text-weight-light">
+              me {{score.A}}
+            </h2>
+            </span>
+          <span :class="setClassturn(statuscoplayer)">
+            <h2 class="subtitle has-text-light has-text-weight-light">
+              enemy {{score.B}}
+            </h2>
+          </span>
+        </div>
+      </div>
+    </div>
     <div class="columns is-mobile is-centered">
       <div class="column is-6">
-        <h1 class="title has-text-light" v-if="score==16">You win</h1>
         <h2 class="subtitle has-text-light">me</h2>
         <table>
           <tr v-for="(y, indexY) in Ownsea" :key="y['.key']">
@@ -20,22 +39,22 @@
         <table>
           <tr v-for="(y, indexY) in Enemysea" :key="y['.key']">
             <td v-for="(x, indexX) in y" :key="x['.key']" @click="setbomb(indexX,indexY,x)" :class="setClass(x)">
-              <img v-if="x.shipstatus" src="../assets/ship.png" class="img">
+              <img v-if="x.bombstatus && x.shipstatus" src="../assets/ship.png" class="img">
             </td>
           </tr>
         </table>
       </div>
     </div>
     <br><br>
-    <div class="columns is-mobile is-centered menu" v-if="score==16">
-      <div class="field is-grouped">
-        <div class="control">
-          <button class="button is-primary is-large" @click="">Finish</button>
-        </div>
-      </div>
-    </div>
   <br>
-
+  <div v-if="score.A == 16 || score.B==16" class="modal is-active">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <h1 v-if="score.A == 16" class="title has-text-light">You win</h1>
+      <h1 v-if="score.B == 16" class="title has-text-light">You lose</h1>
+      <button class="button is-primary is-large" @click="finish()">Finish</button>
+    </div>
+  </div>
   </div>
 </template>
 
@@ -47,7 +66,7 @@ export default {
     return {
       x: 0,
       y: 0,
-      boardOnplay: '0011',
+      boardOnplay: '',
       ShipEnemy: '',
       hidemenu: [true, true, true]
     }
@@ -58,17 +77,27 @@ export default {
       'addScore',
       'getEnemy',
       'getOwn',
-      'getScore'
+      'getScore',
+      'getBoard',
+      'init',
+      'changeturn'
     ]),
     setbomb (x, y, obj) {
-      if (obj.shipstatus && !obj.bombstatus) {
-        this.addScore()
+      if (this.statusplayer === this.turn) {
+        if (obj.shipstatus && !obj.bombstatus) {
+          this.addScore()
+        } else {
+          this.changeturn()
+        }
+        var xy = {
+          x: x,
+          y: y
+        }
+        this.setbombFirebase(xy)
       }
-      var xy = {
-        x: x,
-        y: y
-      }
-      this.setbombFirebase(xy)
+    },
+    finish () {
+      this.$router.push('/lobby')
     },
     showconsole (x, y) {
       console.log(x + ',' + y)
@@ -85,24 +114,30 @@ export default {
       } else {
         return ''
       }
+    },
+    setClassturn (name) {
+      if (name === this.turn) {
+        return 'tag is-success'
+      } else {
+        return 'tag is-dark'
+      }
     }
   },
   computed: {
     ...mapGetters([
       'Ownsea',
       'Enemysea',
-      'score'
-    ]),
-    undatesea () {
-      this.getOwn()
-      this.getEnemy()
-    },
-    undatescore () {
-      this.getScore()
-    }
-
+      'score',
+      'statusplayer',
+      'statuscoplayer',
+      'turn',
+      'me',
+      'user'
+    ])
   },
   created () {
+    this.init()
+    // this.getBoard()
     this.getOwn()
     this.getEnemy()
     this.getScore()
